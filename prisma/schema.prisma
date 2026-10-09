@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+model Merchant {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  email String
+  color String @default("#175c4a")
+  windowDays Int @default(14)
+  shippingFee Int @default(6000)
+  evidenceRequired Boolean @default(true)
+  provider String @default("manual")
+  createdAt DateTime @default(now())
+  staff Staff[]
+  orders Order[]
+  products Product[]
+  requests Exchange[]
+  events Event[]
+  notifications Notification[]
+  sessions Session[]
+}
+model Staff {
+  id String @id @default(cuid())
+  merchantId String
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  email String @unique
+  name String
+  passwordHash String
+  role String @default("owner")
+  sessions Session[]
+}
+model Session {
+  id String @id
+  merchantId String
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  staffId String?
+  staff Staff? @relation(fields: [staffId], references: [id])
+  orderId String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([expiresAt])
+}
+model Challenge {
+  id String @id @default(cuid())
+  merchantId String
+  orderId String?
+  codeHash String
+  attempts Int @default(0)
+  expiresAt DateTime
+  consumed Boolean @default(false)
+}
+model RateLimit {
+  id String @id
+  count Int @default(0)
+  expiresAt DateTime
+}
+model Product {
+  id String @id @default(cuid())
+  merchantId String
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  name String
+  nameAr String
+  image String
+  excluded Boolean @default(false)
+  variants Variant[]
+}
+model Variant {
+  id String @id @default(cuid())
+  productId String
+  product Product @relation(fields: [productId], references: [id])
+  size String
+  color String
+  price Int
+  stock Int
+  items OrderItem[]
+  @@unique([productId, size, color])
+}
+model Order {
+  id String @id @default(cuid())
+  merchantId String
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  number String
+  customerName String
+  email String
+  phone String
+  address String
+  deliveredAt DateTime?
+  createdAt DateTime @default(now())
+  items OrderItem[]
+  requests Exchange[]
+  @@unique([merchantId, number])
+}
+model OrderItem {
+  id String @id @default(cuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+  variantId String
+  variant Variant @relation(fields: [variantId], references: [id])
+  quantity Int @default(1)
+  committed Int @default(0)
+  paidPrice Int
+  requests Exchange[]
+}
+model Exchange {
+  id String @id @default(cuid())
+  reference String @unique
+  merchantId String
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+  itemId String
+  item OrderItem @relation(fields: [itemId], references: [id])
+  replacementId String
+  quantity Int @default(1)
+  reason String
+  notes String @default("")
+  status String @default("submitted")
+  previousStatus String?
+  exception String?
+  fee Int
+  feeStatus String @default("due")
+  policySnapshot String
+  itemSnapshot String
+  replacementSnapshot String
+  stockReserved Boolean @default(false)
+  returnedRestocked Boolean @default(false)
+  version Int @default(0)
+  idempotencyKey String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  completedAt DateTime?
+  events Event[]
+  attachments Attachment[]
+  shipments Shipment[]
+  @@unique([orderId, idempotencyKey])
+  @@index([merchantId, status])
+}
+model Event {
+  id String @id @default(cuid())
+  merchantId String
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  exchangeId String?
+  exchange Exchange? @relation(fields: [exchangeId], references: [id])
+  actor String
+  type String
+  message String
+  createdAt DateTime @default(now())
+  @@index([merchantId, createdAt])
+}
+model Attachment {
+  id String @id @default(cuid())
+  merchantId String
+  orderId String
+  exchangeId String?
+  exchange Exchange? @relation(fields: [exchangeId], references: [id])
+  path String
+  mime String
+  size Int
+  createdAt DateTime @default(now())
+}
+model Shipment {
+  id String @id @default(cuid())
+  exchangeId String
+  exchange Exchange @relation(fields: [exchangeId], references: [id])
+  direction String
+  provider String @default("manual")
+  tracking String?
+  status String @default("scheduled")
+  createdAt DateTime @default(now())
+  @@unique([exchangeId, direction])
+}
+model Notification {
+  id String @id @default(cuid())
+  merchantId String
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  recipient String
+  subject String
+  body String
+  status String @default("queued")
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  lastError String?
+  providerId String?
+  createdAt DateTime @default(now())
+  @@index([status, nextAttemptAt])
+}
