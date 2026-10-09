@@ -33,6 +33,20 @@ The following screenshots use seeded demo data.
 
 ![Customer exchange portal](docs/screenshots/customer-desktop.png)
 
+## Customer experience example
+
+This example follows a shopper exchanging an off-white T-shirt from size M to size L: find the order, verify access, choose the item and reason, select a replacement, review the fee, and track the submitted request.
+
+<p>
+  <img src="docs/screenshots/customer-03-choose-item.jpg" alt="Step 3: customer selects the purchased item to exchange" width="280" />
+  <img src="docs/screenshots/customer-05-replacement.jpg" alt="Step 5: customer selects size L, with unavailable sizes disabled" width="280" />
+  <img src="docs/screenshots/customer-07-tracking.jpg" alt="Step 7: customer sees confirmation and the exchange tracking timeline" width="280" />
+</p>
+
+**[See all seven customer screens with explanations →](docs/CUSTOMER-EXPERIENCE.md)**
+
+These are screenshots of the working local app with fictional demo customer details. The 60 EGP fee is a configurable example. No real email, payment, refund, or courier booking was triggered.
+
 <details>
 <summary>Arabic mobile interface</summary>
 
