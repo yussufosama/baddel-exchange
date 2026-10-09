@@ -5,6 +5,8 @@
 **Working product name:** Baddel / بدّل  
 **Delivery:** A working local, manually operated fashion-exchange MVP.
 
+**Later update:** The merchant analytics expansion delivered on 9 October 2026 is documented in [the analytics update report](ANALYTICS-UPDATE.md).
+
 ## 1. What has been delivered
 
 The application now supports the complete customer-to-merchant exchange journey with real saved database records. A merchant can create a brand, enter products and delivered orders, receive verified customer exchange requests, allocate replacement stock, record collection, inspect the returned item, dispatch a replacement, resolve fees, and complete the request. The customer sees the same request and its history.

@@ -54,6 +54,24 @@ These are screenshots of the working local app with fictional demo customer deta
 
 </details>
 
+## Merchant analytics
+
+The **Reports** page helps owners understand why customers request exchanges and decide what to investigate. The overview includes an **Analyze exchange reasons** shortcut.
+
+- Filter by 7/30/90 days or all time, product, customer-reported reason, and request status.
+- See request counts and quantities, completion time, recorded fees, and completed merchandise value retained.
+- Compare request volume with the previous equal period and explore the trend chart.
+- Find products driving requests and inspect original-to-replacement size/color patterns.
+- Read customer comments, search matching requests, and open their evidence and actions.
+- Review suggested product checks and an exception-first queue for requests without updates for 48 hours.
+- Export exactly the filtered requests, with spreadsheet formula protection.
+
+![Merchant exchange analytics with reasons and trends](docs/screenshots/merchant-analytics-insights.jpg)
+
+These analytics describe recorded **exchange requests**, not all store returns. Product percentages are shares of matching requests, not return rates against sales. Suggested checks use disclosed repetition thresholds and do not claim to diagnose product faults.
+
+Read the [analytics update report](docs/ANALYTICS-UPDATE.md) for metric definitions, research, verification, and remaining improvements.
+
 ## Technology
 
 | Layer | Implementation |

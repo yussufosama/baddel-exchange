@@ -176,7 +176,12 @@ test.describe.serial("Working MVP", () => {
     await expect(customer.locator(".badge")).toHaveText("Completed");
     await detail.getByRole("button", { name: "Close", exact: true }).click();
     await page.getByRole("button", { name: "Reports", exact: true }).click();
-    await expect(page.getByText("EGP 750", { exact: true })).toBeVisible();
+    await expect(
+      page
+        .locator(".stat-card")
+        .filter({ hasText: "Merchandise value retained" })
+        .getByText("EGP 750", { exact: true }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Process outbox" }).click();
     await expect(page.locator(".notification-status").first()).toHaveText(
       "Demo",

@@ -160,6 +160,7 @@ async function getHandler(request: Request, path: string) {
       where: { merchantId: s.merchantId },
       include: {
         order: { select: { number: true, customerName: true } },
+        item: { select: { variant: { select: { productId: true } } } },
         events: { orderBy: { createdAt: "desc" }, take: 1 },
       },
       orderBy: { createdAt: "desc" },

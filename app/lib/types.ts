@@ -53,6 +53,7 @@ export interface Snapshot {
   price: number;
 }
 export interface Exchange {
+  item?: { variant: { productId: string } };
   id: string;
   reference: string;
   merchantId: string;

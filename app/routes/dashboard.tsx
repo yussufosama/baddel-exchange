@@ -26,6 +26,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { requireStaff } from "../lib/security.server";
+import { ExchangeAnalytics } from "../components/analytics";
 import { api, useRemote } from "../lib/client";
 import { useLocale } from "../lib/i18n";
 import { money, statusLabels, reasonLabels, statuses } from "../lib/domain";
@@ -101,7 +102,7 @@ export default function Dashboard() {
   const filtered = requests.filter(
     (r) =>
       (filter === "all" || r.status === filter) &&
-      `${r.reference} ${r.order.number} ${r.order.customerName}`
+      `${r.reference} ${r.order.number} ${r.order.customerName} ${r.notes} ${reasonLabels[r.reason]} ${r.itemSnapshot}`
         .toLowerCase()
         .includes(search.toLowerCase()),
   );
@@ -313,6 +314,32 @@ export default function Dashboard() {
                         </button>
                       ))}
                     </div>
+                    <section className="analytics-overview-callout">
+                      <div>
+                        <BarChart3 size={22} />
+                        <div>
+                          <strong>
+                            {lang === "ar"
+                              ? "لماذا يطلب العملاء الاستبدال؟"
+                              : "Why are customers exchanging?"}
+                          </strong>
+                          <p>
+                            {lang === "ar"
+                              ? "راجع المنتجات والمقاسات وتعليقات العملاء والطلبات التي تحتاج متابعة."
+                              : "Explore product and sizing patterns, customer comments, and requests that need follow-up."}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        className="button secondary small-button"
+                        onClick={() => switchTab("reports")}
+                      >
+                        {lang === "ar"
+                          ? "تحليل أسباب الاستبدال"
+                          : "Analyze exchange reasons"}
+                        <ArrowUpRight size={15} />
+                      </button>
+                    </section>
                     <section className="panel">
                       <div className="panel-heading">
                         <h2>
@@ -460,7 +487,11 @@ export default function Dashboard() {
                 ) : tab === "orders" ? (
                   <Orders />
                 ) : tab === "reports" ? (
-                  <Reports data={data} refresh={remote.refresh} />
+                  <Reports
+                    data={data}
+                    refresh={remote.refresh}
+                    onSelect={setSelected}
+                  />
                 ) : tab === "settings" ? (
                   <SettingsForm
                     merchant={data.merchant}
@@ -1470,36 +1501,15 @@ function SettingsForm({
 function Reports({
   data,
   refresh,
+  onSelect,
 }: {
   data: DashboardData;
   refresh: () => Promise<void>;
+  onSelect: (reference: string) => void;
 }) {
   const { t, lang } = useLocale();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const all = data.requests;
-  const done = all.filter((r) => r.status === "completed");
-  const retained = done.reduce(
-    (s, r) => s + (JSON.parse(r.itemSnapshot) as Snapshot).price * r.quantity,
-    0,
-  );
-  const fee = all
-    .filter((r) => r.feeStatus === "paid")
-    .reduce((s, r) => s + r.fee, 0);
-  const avg = done.length
-    ? done.reduce(
-        (s, r) =>
-          s +
-          (new Date(r.completedAt!).getTime() -
-            new Date(r.createdAt).getTime()) /
-            86400000,
-        0,
-      ) / done.length
-    : 0;
-  const counts = Object.keys(reasonLabels).map((reason) => ({
-    reason,
-    count: all.filter((r) => r.reason === reason).length,
-  }));
   const process = async () => {
     setBusy(true);
     setError("");
@@ -1522,8 +1532,8 @@ function Reports({
           <h1>{t("Reports")}</h1>
           <p>
             {lang === "ar"
-              ? "مقاييس محسوبة من الطلبات المسجلة."
-              : "Metrics calculated from your recorded requests."}
+              ? "اعرف أسباب الاستبدال، والمنتجات والمقاسات المتكررة، وما يحتاج متابعة."
+              : "Understand exchange reasons, spot product and sizing patterns, and follow up sooner."}
           </p>
         </div>
         <a className="button secondary" href="/api/export">
@@ -1531,61 +1541,7 @@ function Reports({
           {t("Export CSV")}
         </a>
       </div>
-      <div className="stats-grid report-stats">
-        {[
-          {
-            label: "Completion rate",
-            value: `${all.length ? Math.round((done.length / all.length) * 100) : 0}%`,
-            note: `${done.length} / ${all.length}`,
-          },
-          {
-            label: "Average completion time",
-            value: `${avg.toFixed(1)}`,
-            note: t("days"),
-          },
-          {
-            label: "Merchandise value retained",
-            value: money(retained, lang),
-            note: t("Based on completed requests; excludes shipping fees."),
-          },
-          {
-            label: "Fee collected",
-            value: money(fee, lang),
-            note:
-              lang === "ar"
-                ? "مبالغ أكدها فريقك"
-                : "Amounts confirmed by your team",
-          },
-        ].map((s) => (
-          <div className="stat-card" key={s.label}>
-            <div>
-              <span>{t(s.label)}</span>
-            </div>
-            <strong>{s.value}</strong>
-            <small>{s.note}</small>
-          </div>
-        ))}
-      </div>
-      <section className="panel report-reasons">
-        <div className="panel-heading">
-          <h2>{t("Exchange reasons")}</h2>
-        </div>
-        {counts.map((c) => (
-          <div className="reason-bar-row" key={c.reason}>
-            <span>
-              <Reason value={c.reason} />
-            </span>
-            <div>
-              <i
-                style={{
-                  width: `${all.length ? (c.count / all.length) * 100 : 0}%`,
-                }}
-              />
-            </div>
-            <strong>{c.count}</strong>
-          </div>
-        ))}
-      </section>
+      <ExchangeAnalytics requests={data.requests} onSelect={onSelect} />
       <section className="panel">
         <div className="panel-heading">
           <h2>
